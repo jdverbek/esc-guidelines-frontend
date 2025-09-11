@@ -17,6 +17,8 @@ import SystemStatus from './components/SystemStatus'
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cardiovascular-guidelines-api.onrender.com'
 
+console.log('API_BASE_URL:', API_BASE_URL) // Debug log
+
 function App() {
   const [systemStatus, setSystemStatus] = useState({
     initialized: false,
