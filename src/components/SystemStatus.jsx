@@ -22,13 +22,15 @@ const SystemStatus = () => {
     try {
       setIsRefreshing(true)
       
+      const API_URL = import.meta.env.VITE_API_URL || 'https://esc-guidelines-search.onrender.com'
+      
       // Fetch system stats
-      const statsResponse = await fetch('/stats')
+      const statsResponse = await fetch(`${API_URL}/stats`)
       const statsData = await statsResponse.json()
       setSystemStats(statsData)
 
       // Fetch guidelines status
-      const guidelinesResponse = await fetch('/guidelines/status')
+      const guidelinesResponse = await fetch(`${API_URL}/guidelines/status`)
       const guidelinesData = await guidelinesResponse.json()
       setGuidelinesStatus(guidelinesData)
 
@@ -43,7 +45,8 @@ const SystemStatus = () => {
 
   const handleDownloadGuidelines = async () => {
     try {
-      const response = await fetch('/guidelines/download', {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://esc-guidelines-search.onrender.com'
+      const response = await fetch(`${API_URL}/guidelines/download`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +68,8 @@ const SystemStatus = () => {
 
   const handleProcessGuidelines = async () => {
     try {
-      const response = await fetch('/guidelines/process', {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://esc-guidelines-search.onrender.com'
+      const response = await fetch(`${API_URL}/guidelines/process`, {
         method: 'POST'
       })
 
