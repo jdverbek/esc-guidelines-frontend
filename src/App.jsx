@@ -10,6 +10,7 @@ import './App.css'
 
 // Import components
 import SearchInterface from './components/SearchInterface'
+import EnhancedSearchInterface from './components/EnhancedSearchInterface'
 import SafetyValidator from './components/SafetyValidator'
 import ComplianceChecker from './components/ComplianceChecker'
 import SystemStatus from './components/SystemStatus'
@@ -17,15 +18,13 @@ import SystemStatus from './components/SystemStatus'
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cardiovascular-guidelines-api.onrender.com'
 
-console.log('API_BASE_URL:', API_BASE_URL) // Debug log
-
 function App() {
   const [systemStatus, setSystemStatus] = useState({
     initialized: false,
     status: 'not_started',
     progress: 0
   })
-  const [activeTab, setActiveTab] = useState('search')
+  const [activeTab, setActiveTab] = useState('enhanced')
   const [isLoading, setIsLoading] = useState(true)
   const [apiConnected, setApiConnected] = useState(false)
 
@@ -98,7 +97,8 @@ function App() {
   }
 
   const navigationItems = [
-    { id: 'search', label: 'Guideline Search', icon: Search, description: 'Search cardiovascular guidelines' },
+    { id: 'enhanced', label: 'Enhanced Search', icon: Search, description: 'AI-powered search with synthesis' },
+    { id: 'search', label: 'Standard Search', icon: BookOpen, description: 'Traditional guideline search' },
     { id: 'safety', label: 'Safety Validation', icon: Shield, description: 'Validate clinical recommendations' },
     { id: 'compliance', label: 'Compliance Check', icon: FileText, description: 'Check guideline compliance' },
     { id: 'status', label: 'System Status', icon: Activity, description: 'Monitor system health' }
@@ -308,6 +308,13 @@ function App() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
+            {activeTab === 'enhanced' && (
+              <EnhancedSearchInterface 
+                systemInitialized={systemStatus.initialized} 
+                apiConnected={apiConnected}
+                apiBaseUrl={API_BASE_URL}
+              />
+            )}
             {activeTab === 'search' && (
               <SearchInterface 
                 systemInitialized={systemStatus.initialized} 
