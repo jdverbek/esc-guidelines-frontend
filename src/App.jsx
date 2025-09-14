@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Search, Shield, FileText, Activity, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Heart, Search, Shield, FileText, Activity, AlertTriangle, CheckCircle, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
