@@ -48,7 +48,7 @@ const SystemStatus = () => {
   const handleDownloadGuidelines = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'https://esc-guidelines-search.onrender.com'
-      const response = await fetch(`${API_URL}/guidelines/download`, {
+      const response = await fetch(`${API_URL}/guidelines/download-from-drive`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
