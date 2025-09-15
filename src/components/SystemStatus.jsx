@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Activity, Server, Database, Download, FileText, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react'
+import { Activity, Server, Database, Download, FileText, CheckCircle, AlertTriangle, RefreshCw, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -11,6 +11,8 @@ const SystemStatus = () => {
   const [guidelinesStatus, setGuidelinesStatus] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState('')
 
   useEffect(() => {
     fetchSystemStatus()
@@ -79,6 +81,76 @@ const SystemStatus = () => {
       }
     } catch (error) {
       console.error('Failed to start guideline processing:', error)
+    }
+  }
+
+  const handleFileUpload = async (event) => {
+    const files = event.target.files
+    if (!files || files.length === 0) return
+
+    setIsUploading(true)
+    setUploadProgress('Starting upload...')
+
+    const API_URL = import.meta.env.VITE_API_URL || 'https://esc-guidelines-search.onrender.com'
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        setUploadProgress(`Uploading ${file.name} (${i + 1}/${files.length})...`)
+
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('society', 'ESC')
+        formData.append('year', '2024')
+        formData.append('guideline_name', file.name.replace('.pdf', ''))
+
+        const response = await fetch(`${API_URL}/guidelines/upload-pdf`, {
+          method: 'POST',
+          body: formData
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          console.log(`✓ Uploaded ${file.name}:`, result)
+        } else {
+          console.error(`✗ Failed to upload ${file.name}`)
+        }
+      }
+
+      setUploadProgress('Upload complete! Refreshing status...')
+      setTimeout(() => {
+        fetchSystemStatus()
+        setIsUploading(false)
+        setUploadProgress('')
+      }, 2000)
+
+    } catch (error) {
+      console.error('Upload error:', error)
+      setUploadProgress('Upload failed')
+      setTimeout(() => {
+        setIsUploading(false)
+        setUploadProgress('')
+      }, 3000)
+    }
+
+    // Reset file input
+    event.target.value = ''
+  }
+
+  const handleProcessDrivePdfs = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://esc-guidelines-search.onrender.com'
+      const response = await fetch(`${API_URL}/guidelines/process-drive-pdfs`, {
+        method: 'POST'
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log('Drive PDF processing started:', result)
+        setTimeout(fetchSystemStatus, 2000)
+      }
+    } catch (error) {
+      console.error('Failed to start drive PDF processing:', error)
     }
   }
 
@@ -269,22 +341,70 @@ const SystemStatus = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex space-x-4">
+                <div className="space-y-4">
+                  {/* Upload Section */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <h4 className="font-medium mb-2">Upload ESC Guidelines PDFs</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Upload PDFs from your Google Drive folder to process them automatically
+                    </p>
+                    
+                    <input
+                      type="file"
+                      id="pdf-upload"
+                      multiple
+                      accept=".pdf"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      disabled={isUploading}
+                    />
+                    
+                    <Button 
+                      onClick={() => document.getElementById('pdf-upload').click()}
+                      disabled={isUploading}
+                      className="mb-2"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {isUploading ? 'Uploading...' : 'Select PDF Files'}
+                    </Button>
+                    
+                    {uploadProgress && (
+                      <div className="text-sm text-blue-600 mt-2">
+                        {uploadProgress}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Traditional Buttons */}
+                  <div className="flex space-x-4">
+                    <Button 
+                      onClick={handleDownloadGuidelines}
+                      className="flex-1"
+                      variant="outline"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Guidelines
+                    </Button>
+                    <Button 
+                      onClick={handleProcessGuidelines}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={guidelinesStatus.downloaded.total === 0}
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Process Guidelines
+                    </Button>
+                  </div>
+
+                  {/* Google Drive Processing */}
                   <Button 
-                    onClick={handleDownloadGuidelines}
-                    className="flex-1"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Guidelines
-                  </Button>
-                  <Button 
-                    onClick={handleProcessGuidelines}
+                    onClick={handleProcessDrivePdfs}
                     variant="outline"
-                    className="flex-1"
-                    disabled={guidelinesStatus.downloaded.total === 0}
+                    className="w-full"
                   >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Process Guidelines
+                    <Database className="w-4 h-4 mr-2" />
+                    Process Drive PDFs
                   </Button>
                 </div>
               </div>
